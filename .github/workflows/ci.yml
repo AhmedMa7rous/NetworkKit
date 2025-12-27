@@ -12,16 +12,11 @@ env:
 jobs:
 
   # -------------------------------------------------
-  # iOS – Xcode (Matrix + Safe Fallback)
+  # iOS – Xcode (Stable Simulator Selection)
   # -------------------------------------------------
   ios:
     name: iOS Tests (Xcode)
     runs-on: macos-15
-
-    strategy:
-      fail-fast: false
-      matrix:
-        ios: [ "17", "18" ]
 
     steps:
       - name: Checkout
@@ -30,24 +25,15 @@ jobs:
       - name: Xcode version
         run: xcodebuild -version
 
-      - name: List available simulators
+      - name: List available simulators (debug)
         run: xcrun simctl list devices available
 
-      - name: Select simulator destination
-        id: simulator
-        run: |
-          if xcrun simctl list runtimes | grep -q "iOS ${{ matrix.ios }}"; then
-            echo "destination=platform=iOS Simulator,OS=${{ matrix.ios }}" >> $GITHUB_OUTPUT
-          else
-            echo "destination=platform=iOS Simulator" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Build & Test (iOS ${{ matrix.ios }})
+      - name: Build & Test (iOS)
         run: |
           xcodebuild test \
             -scheme NetworkKit \
             -sdk iphonesimulator \
-            -destination "${{ steps.simulator.outputs.destination }}" \
+            -destination "platform=iOS Simulator" \
             -enableCodeCoverage YES \
             CODE_SIGNING_ALLOWED=NO
 
