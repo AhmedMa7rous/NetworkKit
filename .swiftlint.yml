@@ -24,7 +24,6 @@ opt_in_rules:
   
   # Clarity
   - explicit_init
-  - explicit_type_interface
   - implicit_return
   - joined_default_parameter
   - multiline_arguments
