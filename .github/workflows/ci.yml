@@ -11,35 +11,49 @@ env:
 
 jobs:
 
-  # ----------------------------------------
-  # iOS (Xcode-based)
-  # ----------------------------------------
+  # -------------------------------------------------
+  # iOS – Xcode (Matrix + Safe Fallback)
+  # -------------------------------------------------
   ios:
     name: iOS Tests (Xcode)
     runs-on: macos-15
+
+    strategy:
+      fail-fast: false
+      matrix:
+        ios: [ "17", "18" ]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Show Xcode version
+      - name: Xcode version
         run: xcodebuild -version
 
       - name: List available simulators
         run: xcrun simctl list devices available
 
-      - name: Build & Test (iOS Simulator)
+      - name: Select simulator destination
+        id: simulator
+        run: |
+          if xcrun simctl list runtimes | grep -q "iOS ${{ matrix.ios }}"; then
+            echo "destination=platform=iOS Simulator,OS=${{ matrix.ios }}" >> $GITHUB_OUTPUT
+          else
+            echo "destination=platform=iOS Simulator" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build & Test (iOS ${{ matrix.ios }})
         run: |
           xcodebuild test \
             -scheme NetworkKit \
             -sdk iphonesimulator \
-            -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.0' \
+            -destination "${{ steps.simulator.outputs.destination }}" \
             -enableCodeCoverage YES \
             CODE_SIGNING_ALLOWED=NO
 
-  # ----------------------------------------
-  # macOS (Swift Package Manager)
-  # ----------------------------------------
+  # -------------------------------------------------
+  # macOS – Swift Package Manager
+  # -------------------------------------------------
   macos:
     name: macOS Tests (SPM)
     runs-on: macos-15
@@ -48,7 +62,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Show Swift version
+      - name: Swift version
         run: swift --version
 
       - name: Build
@@ -73,15 +87,16 @@ jobs:
           fail_ci_if_error: false
         continue-on-error: true
 
-  # ----------------------------------------
+  # -------------------------------------------------
   # SwiftLint
-  # ----------------------------------------
+  # -------------------------------------------------
   lint:
     name: SwiftLint
     runs-on: macos-15
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Install SwiftLint
         run: brew install swiftlint
@@ -89,15 +104,16 @@ jobs:
       - name: Run SwiftLint
         run: swiftlint lint --strict
 
-  # ----------------------------------------
+  # -------------------------------------------------
   # Swift 6 Strict Concurrency
-  # ----------------------------------------
+  # -------------------------------------------------
   swift-6-concurrency:
     name: Swift 6 Strict Concurrency
     runs-on: macos-15
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Build with strict concurrency
         run: |
