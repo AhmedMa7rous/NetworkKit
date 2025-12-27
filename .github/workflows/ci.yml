@@ -15,27 +15,24 @@ jobs:
   # iOS – Xcode (Stable Simulator Selection)
   # -------------------------------------------------
   ios:
-    name: iOS Tests (Xcode)
-    runs-on: macos-15
+  name: iOS Tests (Xcode)
+  runs-on: macos-15
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
 
-      - name: Xcode version
-        run: xcodebuild -version
+    - name: Xcode version
+      run: xcodebuild -version
 
-      - name: List available simulators (debug)
-        run: xcrun simctl list devices available
-
-      - name: Build & Test (iOS)
-        run: |
-          xcodebuild test \
-            -scheme NetworkKit \
-            -sdk iphonesimulator \
-            -destination "platform=iOS Simulator" \
-            -enableCodeCoverage YES \
-            CODE_SIGNING_ALLOWED=NO
+    - name: Build & Test (iOS)
+      run: |
+        xcodebuild test \
+          -scheme NetworkKit \
+          -sdk iphonesimulator \
+          -destination "platform=iOS Simulator,name=Any iOS Simulator Device" \
+          -enableCodeCoverage YES \
+          CODE_SIGNING_ALLOWED=NO
 
   # -------------------------------------------------
   # macOS – Swift Package Manager
