@@ -6,33 +6,149 @@ on:
   pull_request:
     branches: [ main, develop ]
 
+env:
+  DEVELOPER_DIR: /Applications/Xcode_16.2.app/Contents/Developer
+
 jobs:
-  test:
-    name: Test
-    runs-on: macos-15.7.3
+  test-ios:
+    name: Test iOS 18
+    runs-on: macos-15
         
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
     
-    - name: Select Xcode
-      run: sudo xcode-select -s /Applications/Xcode_26.2.app
+    - name: Show environment
+      run: |
+        echo "=== macOS Version ==="
+        sw_vers
+        echo ""
+        echo "=== Xcode Version ==="
+        xcodebuild -version
+        echo ""
+        echo "=== Swift Version ==="
+        swift --version
+        echo ""
+        echo "=== Available iOS Simulators ==="
+        xcrun simctl list devices available | grep "iPhone"
       
-    - name: Build
+    - name: Build for iOS 18
+      run: |
+        swift build -v \
+          -Xswiftc -sdk -Xswiftc $(xcrun --sdk iphonesimulator --show-sdk-path) \
+          -Xswiftc -target -Xswiftc arm64-apple-ios18.0-simulator
+      
+    - name: Run tests on iOS 18
+      run: |
+        xcodebuild test \
+          -scheme NetworkKit \
+          -sdk iphonesimulator \
+          -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.2' \
+          -enableCodeCoverage YES \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO
+
+  test-macos:
+    name: Test macOS 15
+    runs-on: macos-15
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Show versions
+      run: |
+        xcodebuild -version
+        swift --version
+      
+    - name: Build for macOS
       run: swift build -v
       
-    - name: Run tests
-      run: swift test -v
+    - name: Run tests on macOS
+      run: swift test -v --enable-code-coverage
+      
+    - name: Generate coverage report
+      run: |
+        xcrun llvm-cov export -format="lcov" \
+          .build/debug/NetworkKitPackageTests.xctest/Contents/MacOS/NetworkKitPackageTests \
+          -instr-profile .build/debug/codecov/default.profdata > coverage.lcov
+      continue-on-error: true
+      
+    - name: Upload coverage
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.lcov
+        fail_ci_if_error: false
+      continue-on-error: true
 
   lint:
-    name: SwiftLint
-    runs-on: macos-15.7.3
+    name: SwiftLint (Swift 6)
+    runs-on: macos-15
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
     
-    - name: SwiftLint
+    - name: Install SwiftLint
+      run: brew install swiftlint
+      
+    - name: Run SwiftLint
+      run: swiftlint lint --strict
+
+  build-all-platforms:
+    name: Build All Apple Platforms
+    runs-on: macos-15
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Build for iOS 18
       run: |
-        brew install swiftlint
-        swiftlint lint --strict
+        xcodebuild build \
+          -scheme NetworkKit \
+          -sdk iphonesimulator \
+          -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.2'
+    
+    - name: Build for macOS 15
+      run: |
+        xcodebuild build \
+          -scheme NetworkKit \
+          -sdk macosx \
+          -destination 'platform=macOS,arch=arm64'
+    
+    - name: Build for watchOS 11
+      run: |
+        xcodebuild build \
+          -scheme NetworkKit \
+          -sdk watchsimulator \
+          -destination 'platform=watchOS Simulator,name=Apple Watch Series 10 (46mm),OS=11.2'
+    
+    - name: Build for tvOS 18
+      run: |
+        xcodebuild build \
+          -scheme NetworkKit \
+          -sdk appletvsimulator \
+          -destination 'platform=tvOS Simulator,name=Apple TV 4K (3rd generation),OS=18.2'
+    
+    - name: Build for visionOS 2
+      run: |
+        xcodebuild build \
+          -scheme NetworkKit \
+          -sdk xrsimulator \
+          -destination 'platform=visionOS Simulator,name=Apple Vision Pro,OS=2.2'
+      continue-on-error: true
+
+  swift-6-strict-concurrency:
+    name: Swift 6 Strict Concurrency Check
+    runs-on: macos-15
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Build with strict concurrency
+      run: |
+        swift build -v \
+          -Xswiftc -strict-concurrency=complete \
+          -Xswiftc -enable-actor-data-race-checks
