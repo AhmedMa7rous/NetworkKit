@@ -116,27 +116,6 @@ jobs:
           -scheme NetworkKit \
           -sdk macosx \
           -destination 'platform=macOS,arch=arm64'
-    
-    - name: Build for watchOS 11
-      run: |
-        xcodebuild build \
-          -scheme NetworkKit \
-          -sdk watchsimulator \
-          -destination 'platform=watchOS Simulator,name=Apple Watch Series 10 (46mm),OS=11.2'
-    
-    - name: Build for tvOS 18
-      run: |
-        xcodebuild build \
-          -scheme NetworkKit \
-          -sdk appletvsimulator \
-          -destination 'platform=tvOS Simulator,name=Apple TV 4K (3rd generation),OS=18.2'
-    
-    - name: Build for visionOS 2
-      run: |
-        xcodebuild build \
-          -scheme NetworkKit \
-          -sdk xrsimulator \
-          -destination 'platform=visionOS Simulator,name=Apple Vision Pro,OS=2.2'
       continue-on-error: true
 
   swift-6-strict-concurrency:

@@ -3,21 +3,18 @@
 
 import PackageDescription
 
-let package = Package(
+let package: Package = Package(
     name: "NetworkKit",
     platforms: [
         .iOS(.v18),           // ✅ iOS 18 minimum
-        .macOS(.v15),         // ✅ macOS 15 Sequoia
-        .watchOS(.v11),       // ✅ watchOS 11
-        .tvOS(.v18),          // ✅ tvOS 18
-        .visionOS(.v2)        // ✅ visionOS 2 (new!)
+        .macOS(.v15)          // ✅ macOS 15 Sequoia
     ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
             name: "NetworkKit",
             targets: ["NetworkKit"]
-        ),
+        )
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -27,13 +24,13 @@ let package = Package(
             dependencies: [],
             swiftSettings: [
                 .enableUpcomingFeature("ExistentialAny"),
-                .enableExperimentalFeature("StrictConcurrency"),
+                .enableExperimentalFeature("StrictConcurrency")
             ]
         ),
         .testTarget(
             name: "NetworkKitTests",
             dependencies: ["NetworkKit"]
-        ),
+        )
     ],
     swiftLanguageModes: [.v6]
 )
