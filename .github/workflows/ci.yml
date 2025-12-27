@@ -10,124 +10,97 @@ env:
   DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
 
 jobs:
-  test-ios:
-    name: Test iOS 15
-    runs-on: macos-15
-        
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Show environment
-      run: |
-        echo "=== macOS Version ==="
-        sw_vers
-        echo ""
-        echo "=== Xcode Version ==="
-        xcodebuild -version
-        echo ""
-        echo "=== Swift Version ==="
-        swift --version
-        echo ""
-        echo "=== Available iOS Simulators ==="
-        xcrun simctl list devices available | grep "iPhone"
-      
-    - name: Build for iOS 15
-      run: |
-        swift build -v \
-          -Xswiftc -sdk -Xswiftc $(xcrun --sdk iphonesimulator --show-sdk-path) \
-          -Xswiftc -target -Xswiftc arm64-apple-ios15.0-simulator
-      
-    - name: Run tests on iOS 15
-      run: |
-        xcodebuild test \
-          -scheme NetworkKit \
-          -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=15.0' \
-          -enableCodeCoverage YES \
-          CODE_SIGN_IDENTITY="" \
-          CODE_SIGNING_REQUIRED=NO
 
-  test-macos:
-    name: Test macOS 15
+  # ----------------------------------------
+  # iOS (Xcode-based)
+  # ----------------------------------------
+  ios:
+    name: iOS Tests (Xcode)
     runs-on: macos-15
-        
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Show versions
-      run: |
-        xcodebuild -version
-        swift --version
-      
-    - name: Build for macOS
-      run: swift build -v
-      
-    - name: Run tests on macOS
-      run: swift test -v --enable-code-coverage
-      
-    - name: Generate coverage report
-      run: |
-        xcrun llvm-cov export -format="lcov" \
-          .build/debug/NetworkKitPackageTests.xctest/Contents/MacOS/NetworkKitPackageTests \
-          -instr-profile .build/debug/codecov/default.profdata > coverage.lcov
-      continue-on-error: true
-      
-    - name: Upload coverage
-      uses: codecov/codecov-action@v4
-      with:
-        file: ./coverage.lcov
-        fail_ci_if_error: false
-      continue-on-error: true
 
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: List available simulators
+        run: xcrun simctl list devices available
+
+      - name: Build & Test (iOS Simulator)
+        run: |
+          xcodebuild test \
+            -scheme NetworkKit \
+            -sdk iphonesimulator \
+            -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.0' \
+            -enableCodeCoverage YES \
+            CODE_SIGNING_ALLOWED=NO
+
+  # ----------------------------------------
+  # macOS (Swift Package Manager)
+  # ----------------------------------------
+  macos:
+    name: macOS Tests (SPM)
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show Swift version
+        run: swift --version
+
+      - name: Build
+        run: swift build -v
+
+      - name: Test
+        run: swift test -v --enable-code-coverage
+
+      - name: Generate coverage (lcov)
+        run: |
+          xcrun llvm-cov export \
+            -format="lcov" \
+            .build/debug/NetworkKitPackageTests.xctest/Contents/MacOS/NetworkKitPackageTests \
+            -instr-profile .build/debug/codecov/default.profdata \
+            > coverage.lcov
+        continue-on-error: true
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: coverage.lcov
+          fail_ci_if_error: false
+        continue-on-error: true
+
+  # ----------------------------------------
+  # SwiftLint
+  # ----------------------------------------
   lint:
-    name: SwiftLint (Swift 6)
+    name: SwiftLint
     runs-on: macos-15
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Install SwiftLint
-      run: brew install swiftlint
-      
-    - name: Run SwiftLint
-      run: swiftlint lint --strict
 
-  build-all-platforms:
-    name: Build All Apple Platforms
-    runs-on: macos-15
-    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Build for iOS 15
-      run: |
-        xcodebuild build \
-          -scheme NetworkKit \
-          -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=15.0'
-    
-    - name: Build for macOS 15
-      run: |
-        xcodebuild build \
-          -scheme NetworkKit \
-          -sdk macosx \
-          -destination 'platform=macOS,arch=arm64'
-      continue-on-error: true
+      - uses: actions/checkout@v4
 
-  swift-6-strict-concurrency:
-    name: Swift 6 Strict Concurrency Check
+      - name: Install SwiftLint
+        run: brew install swiftlint
+
+      - name: Run SwiftLint
+        run: swiftlint lint --strict
+
+  # ----------------------------------------
+  # Swift 6 Strict Concurrency
+  # ----------------------------------------
+  swift-6-concurrency:
+    name: Swift 6 Strict Concurrency
     runs-on: macos-15
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Build with strict concurrency
-      run: |
-        swift build -v \
-          -Xswiftc -strict-concurrency=complete \
-          -Xswiftc -enable-actor-data-race-checks
+      - uses: actions/checkout@v4
+
+      - name: Build with strict concurrency
+        run: |
+          swift build -v \
+            -Xswiftc -strict-concurrency=complete \
+            -Xswiftc -enable-actor-data-race-checks
