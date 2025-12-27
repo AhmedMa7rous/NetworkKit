@@ -40,12 +40,12 @@ public protocol RequestInterceptor: Sendable {
     /// - Parameters:
     ///   - result: The result of the network request
     ///   - request: The original URLRequest
-    func didReceive(_ result: Result<NetworkResponse, Error>, for request: URLRequest) async
+    func didReceive(_ result: Result<NetworkResponse, any Error>, for request: URLRequest) async
 }
 
 /// Default implementation for didReceive (optional)
 public extension RequestInterceptor {
-    func didReceive(_ result: Result<NetworkResponse, Error>, for request: URLRequest) async {
+    func didReceive(_ result: Result<NetworkResponse, any Error>, for request: URLRequest) async {
         // Default empty implementation
     }
 }

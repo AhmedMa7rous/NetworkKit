@@ -32,7 +32,7 @@ public protocol RequestRetrier: Sendable {
     ///   - error: The error that occurred
     ///   - attemptCount: Number of attempts so far (1-based)
     /// - Returns: true if request should be retried
-    func shouldRetry(request: NetworkRequest, error: Error, attemptCount: Int) -> Bool
+    func shouldRetry(request: NetworkRequest, error: any Error, attemptCount: Int) -> Bool
     
     /// Calculate delay before next retry attempt
     ///
