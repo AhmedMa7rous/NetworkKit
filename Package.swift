@@ -3,7 +3,7 @@
 
 import PackageDescription
 
-let package: Package = Package(
+let package = Package(
     name: "NetworkKit",
     platforms: [
         .iOS(.v18),           // ✅ iOS 18 minimum
