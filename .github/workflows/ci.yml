@@ -7,11 +7,11 @@ on:
     branches: [ main, develop ]
 
 env:
-  DEVELOPER_DIR: /Applications/Xcode_16.2.app/Contents/Developer
+  DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
 
 jobs:
   test-ios:
-    name: Test iOS 18
+    name: Test iOS 15
     runs-on: macos-15
         
     steps:
@@ -32,18 +32,18 @@ jobs:
         echo "=== Available iOS Simulators ==="
         xcrun simctl list devices available | grep "iPhone"
       
-    - name: Build for iOS 18
+    - name: Build for iOS 15
       run: |
         swift build -v \
           -Xswiftc -sdk -Xswiftc $(xcrun --sdk iphonesimulator --show-sdk-path) \
-          -Xswiftc -target -Xswiftc arm64-apple-ios18.0-simulator
+          -Xswiftc -target -Xswiftc arm64-apple-ios15.0-simulator
       
-    - name: Run tests on iOS 18
+    - name: Run tests on iOS 15
       run: |
         xcodebuild test \
           -scheme NetworkKit \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.2' \
+          -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=15.0' \
           -enableCodeCoverage YES \
           CODE_SIGN_IDENTITY="" \
           CODE_SIGNING_REQUIRED=NO
@@ -103,12 +103,12 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: Build for iOS 18
+    - name: Build for iOS 15
       run: |
         xcodebuild build \
           -scheme NetworkKit \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.2'
+          -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=15.0'
     
     - name: Build for macOS 15
       run: |

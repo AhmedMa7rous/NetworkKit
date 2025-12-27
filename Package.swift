@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "NetworkKit",
     platforms: [
-        .iOS(.v18),           // ✅ iOS 18 minimum
+        .iOS(.v15),           // ✅ iOS 15 minimum
         .macOS(.v15)          // ✅ macOS 15 Sequoia
     ],
     products: [
