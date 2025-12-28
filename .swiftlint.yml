@@ -42,7 +42,6 @@ opt_in_rules:
   - force_unwrapping
   - implicitly_unwrapped_optional
   - discouraged_optional_boolean
-  - discouraged_optional_collection
   - legacy_random
   - unavailable_function
   
