@@ -90,7 +90,7 @@ public final class NetworkClient: NetworkClientProtocol, @unchecked Sendable {
             let config = URLSessionConfiguration.default
             let session = URLSession(configuration: config, delegate: delegate, delegateQueue: nil)
             
-            let task = session.uploadTask(with: urlRequest, from: data) { data, response, error in
+            let task = session.uploadTask(with: urlRequest, from: data) { data, _, error in
                 if let error = error {
                     continuation.resume(throwing: self.mapError(error))
                     return
@@ -119,7 +119,7 @@ public final class NetworkClient: NetworkClientProtocol, @unchecked Sendable {
             let config = URLSessionConfiguration.default
             let session = URLSession(configuration: config, delegate: delegate, delegateQueue: nil)
             
-            let task = session.downloadTask(with: urlRequest) { location, response, error in
+            let task = session.downloadTask(with: urlRequest) { location, _, error in
                 if let error = error {
                     continuation.resume(throwing: self.mapError(error))
                     return
@@ -158,7 +158,6 @@ public final class NetworkClient: NetworkClientProtocol, @unchecked Sendable {
                 await notifyInterceptors(result: .success(response), for: urlRequest)
                 
                 return response
-                
             } catch {
                 lastError = error
                 
