@@ -21,8 +21,8 @@ import Foundation
 /// )
 /// ```
 public final class HybridCacheStorage: CacheStorage {
-    private let memoryStorage: CacheStorage
-    private let diskStorage: CacheStorage
+    private let memoryStorage: any CacheStorage
+    private let diskStorage: any CacheStorage
     
     /// Initialize hybrid cache
     ///
@@ -30,8 +30,8 @@ public final class HybridCacheStorage: CacheStorage {
     ///   - memoryStorage: Memory cache to use (default: MemoryCacheStorage)
     ///   - diskStorage: Disk cache to use (default: DiskCacheStorage)
     public init(
-        memoryStorage: CacheStorage = MemoryCacheStorage(),
-        diskStorage: CacheStorage = DiskCacheStorage()
+        memoryStorage: any CacheStorage = MemoryCacheStorage(),
+        diskStorage: any CacheStorage = DiskCacheStorage()
     ) {
         self.memoryStorage = memoryStorage
         self.diskStorage = diskStorage

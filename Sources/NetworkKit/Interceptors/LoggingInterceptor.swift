@@ -60,7 +60,7 @@ public final class LoggingInterceptor: RequestInterceptor, @unchecked Sendable {
         return request
     }
     
-    public func didReceive(_ result: Result<NetworkResponse, Error>, for request: URLRequest) async {
+    public func didReceive(_ result: Result<NetworkResponse, any Error>, for request: URLRequest) async {
         guard level != .none else { return }
         
         let url = request.url?.absoluteString ?? "UNKNOWN"
